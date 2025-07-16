@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.database import engine, Base, SessionLocal
-from app.routes import users, products
+from app.routes import users, products , orders
 from app.utils.seed import seed_admin
 from app import models 
 
@@ -33,5 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(users.router, prefix="/auth", tags=["Users"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
+app.include_router(orders.router, prefix="/orders", tags=["Orders"])

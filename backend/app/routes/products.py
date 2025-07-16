@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, File
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Product, User
@@ -11,7 +11,7 @@ import os
 router = APIRouter()
 
 UPLOAD_DIR = "app/static/uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=true)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Admin-only create product
 @router.post("/", response_model=ProductOut)
 def create_product(
