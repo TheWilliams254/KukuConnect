@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+env/
+.env
+*.db
+*.sqlite3
+*.log
+
+# Pyenv
+.python-version
+
+# FastAPI
+instance/
+app/__pycache__/
+
+# Node / Bun / React
+node_modules/
+bun.lockb
+package-lock.json
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.swp
+
+# Mac/Linux
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+htmlcov/
+*.cover
+*.pyc
+
+# Logs
+*.log
+logs/

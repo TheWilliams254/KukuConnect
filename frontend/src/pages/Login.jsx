@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
+import API_BASE from '../api';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -22,31 +23,25 @@ const Login = () => {
   e.preventDefault();
 
   try {
-    const res = await fetch("http://localhost:5000/login", {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
 
-    if (!res.ok) throw new Error("Login failed");
-
     const data = await res.json();
 
-    // Save to localStorage
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("role", data.user.role);
-
-    // Redirect based on role
-    if (data.user.role === "admin") {
-      navigate("/admin");
+    if (res.ok) {
+      localStorage.setItem("token", data.access_token);
+      // Fetch user role if not returned, or store it
+      navigate("/dashboard"); // or /admin
     } else {
-      navigate("/dashboard");
+      alert(data.detail || "Login failed");
     }
   } catch (err) {
-    alert("Login failed");
+    console.error("Login error:", err);
   }
 };
-
 
   return (
     <div className="auth-container">

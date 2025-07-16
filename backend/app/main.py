@@ -1,20 +1,21 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from app.database import engine, Base, SessionLocal
 from app.routes import users, products
-from fastapi.middleware.cors import CORSMiddleware
+from app.utils.seed import seed_admin
+from app import models 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    db = SessionLocal()
+    seed_admin(db)
+    db.close()
 
-app.include_router(users.router, prefix="/auth")
-app.include_router(products.router, prefix="/products")
+    yield  # App is now running
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to KukuConnect API 🐔"}
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(users.router, prefix="/auth", tags=["Users"])
+app.include_router(products.router, prefix="/products", tags=["Products"])
