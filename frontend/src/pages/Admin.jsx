@@ -1,10 +1,13 @@
 import React from 'react';
+import AdminUsers from '../components/AdminUsers';
+import AdminProducts from '../components/AdminProducts';
 
 const Admin = () => {
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h2>Admin Dashboard 🛡️</h2>
-      <p>Here you can manage products, orders, and users.</p>
+    <div>
+      <h2>Admin Dashboard</h2>
+      <AdminUsers />
+      <AdminProducts />
     </div>
   );
 };

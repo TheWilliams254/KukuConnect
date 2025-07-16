@@ -5,6 +5,8 @@ from app.models import User
 from app.schemas import UserCreate, UserOut, Token, UserLogin
 from app.auth import get_password_hash, verify_password, create_access_token
 from datetime import timedelta
+from typing import List
+from app.utils.auth import get_current_user
 
 router = APIRouter()
 
@@ -45,3 +47,10 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "role": db_user.role
         }
+
+@router.get("/users", response_model=List[UserOut])
+def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admins only")
+    return db.query(User).all()
+

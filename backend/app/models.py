@@ -16,4 +16,5 @@ class Product(Base):
     name = Column(String, nullable=False)
     price = Column(Float, nullable=False)
     description = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
