@@ -18,11 +18,35 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(`${isRegister ? 'Registering' : 'Logging in'} with:`, formData);
-    // Later I will add the logic for registration and login in the backend
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (!res.ok) throw new Error("Login failed");
+
+    const data = await res.json();
+
+    // Save to localStorage
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.user.role);
+
+    // Redirect based on role
+    if (data.user.role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
+  } catch (err) {
+    alert("Login failed");
+  }
+};
+
 
   return (
     <div className="auth-container">
