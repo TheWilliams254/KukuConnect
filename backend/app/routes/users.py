@@ -40,4 +40,8 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         expires_delta=timedelta(minutes=60)
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "role": db_user.role
+        }

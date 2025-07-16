@@ -23,7 +23,7 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-
+    role: str
 class ProductCreate(BaseModel):
     name: str
     price: float

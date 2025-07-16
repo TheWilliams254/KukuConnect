@@ -21,38 +21,38 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const url = isRegister ? `${API_BASE}/auth/register` : `${API_BASE}/auth/login`;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const payload = isRegister
-      ? formData
-      : { username: formData.username, password: formData.password };
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.username,
+        password: formData.password
+      }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-        if (!isRegister) {
-          localStorage.setItem('token', data.access_token);
-          navigate('/dashboard'); // or use role to redirect conditionally
-        } else {
-          alert('Registration successful. Please log in.');
-          setIsRegister(false);
-        }
+    if (res.ok) {
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.role);
+
+      if (data.role === "admin") {
+        navigate("/admin");
       } else {
-        alert(data.detail || 'Something went wrong');
+        navigate("/dashboard");
       }
-    } catch (err) {
-      console.error('Auth error:', err);
-      alert('Server error');
+    } else {
+      alert(data.detail || "Login failed");
     }
-  };
+  } catch (err) {
+    console.error("Login error:", err);
+  }
+};
+
 
   return (
     <div className="auth-container">
