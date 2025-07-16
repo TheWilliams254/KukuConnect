@@ -49,8 +49,12 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         }
 
 @router.get("/users", response_model=List[UserOut])
-def get_all_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_all_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admins only")
+
     return db.query(User).all()
 
