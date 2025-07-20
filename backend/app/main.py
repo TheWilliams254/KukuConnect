@@ -2,21 +2,21 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.database import engine, Base, SessionLocal
-from app.routes import users, products , orders
-from app.utils.seed import seed_admin
-from app import models 
+from app.db import engine, Base, AsyncSessionLocal
+from app.api import auth, order, product
+from app.seed import seed_data_async
+from app.models import User, Product, Order
 
-#Lifespan event
-@asynccontextmanager
+#Lifespan event@asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-
-    db = SessionLocal()
-    seed_admin(db)
-    db.close()
-
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        await seed_data_async()
+    except Exception as e:
+        print(f"[Startup Error] {e}")
     yield
+
 
 #Instantiating FastAPI with lifespan
 app = FastAPI(lifespan=lifespan) 
@@ -34,7 +34,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Your API is up and running"}
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.include_router(users.router, prefix="/auth", tags=["Users"])
-app.include_router(products.router, prefix="/products", tags=["Products"])
-app.include_router(orders.router, prefix="/orders", tags=["Orders"])
+app.include_router(auth.router, prefix="/auth", tags=["Users"])
+app.include_router(product.router, prefix="/products", tags=["Products"])
+app.include_router(order.router, prefix="/orders", tags=["Orders"])
