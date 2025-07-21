@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, File
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.db import get_db
 from app.models import Product, User
 from app.schemas.product import ProductCreate, ProductOut
@@ -9,17 +10,17 @@ import shutil
 import os
 
 router = APIRouter()
-
 UPLOAD_DIR = "app/static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-# Admin-only create product
-@router.post("/", response_model=ProductOut)
-def create_product(
+
+# Create product (admin only)
+@router.post("/products", response_model=ProductOut)
+async def create_product(
     name: str = Form(...),
     price: float = Form(...),
     description: str = Form(None),
     image: UploadFile = File(...),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role != "admin":
@@ -38,51 +39,58 @@ def create_product(
         image_url=image_url
     )
     db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
+    await db.commit()
+    await db.refresh(new_product)
     return new_product
 
-#Anyone can view products
-@router.get("/", response_model=List[ProductOut])
-def get_products(db: Session = Depends(get_db)):
-    return db.query(Product).all()
 
-#Admin-only delete product
-@router.delete("/{product_id}")
-def delete_product(
+# Get all products
+@router.get("/products", response_model=List[ProductOut])
+async def get_products(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Product))
+    products = result.scalars().all()
+    return products
+
+
+# Delete product (admin only)
+@router.delete("/products/{product_id}")
+async def delete_product(
     product_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Only admins can delete products")
 
-    product = db.query(Product).filter(Product.id == product_id).first()
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    product = result.scalars().first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    db.delete(product)
-    db.commit()
+    await db.delete(product)
+    await db.commit()
     return {"message": "Product deleted successfully"}
 
-#Admin-only update product
-@router.put("/{product_id}", response_model=ProductOut)
-def update_product(
+
+# Update product (admin only)
+@router.put("/products/{product_id}", response_model=ProductOut)
+async def update_product(
     product_id: int,
-    product: ProductCreate,
-    db: Session = Depends(get_db),
+    product_data: ProductCreate,
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Only admins can update products")
 
-    db_product = db.query(Product).filter(Product.id == product_id).first()
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    db_product = result.scalars().first()
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    for key, value in product.dict().items():
+    for key, value in product_data.dict().items():
         setattr(db_product, key, value)
 
-    db.commit()
-    db.refresh(db_product)
+    await db.commit()
+    await db.refresh(db_product)
     return db_product

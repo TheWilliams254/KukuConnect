@@ -1,2 +1,2 @@
-from core.config import settings
-print(settings.model_dump())
+from app.core.config.settings import settings
+print(settings.ACCESS_TOKEN_EXPIRE_MINUTES)

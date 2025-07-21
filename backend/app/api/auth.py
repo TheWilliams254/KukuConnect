@@ -5,6 +5,7 @@ from sqlalchemy.future import select
 from typing import Optional
 from datetime import timedelta
 from jose import JWTError, jwt
+from app.core.config.settings import settings
 
 from app.db import get_db
 from app.models import User
@@ -15,7 +16,6 @@ from app.core.security import (
     create_access_token,
     oauth2_scheme,
 )
-from app.core.config import settings
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
@@ -34,7 +34,7 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         username=user_data.username,
         email=user_data.email,
         password=hashed_password,
-        role=user_data.role or "user"
+        role="user"
     )
     db.add(new_user)
     await db.commit()
@@ -52,7 +52,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires

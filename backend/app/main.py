@@ -39,6 +39,7 @@ async def root():
     return {"message": "Your API is up and running"}
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.include_router(auth.router, prefix="/auth", tags=["Users"])
-app.include_router(product.router, prefix="/products", tags=["Products"])
+# app.include_router(auth.router, prefix="/auth", tags=["Users"])
+app.include_router(auth.router)
+app.include_router(product.router, tags=["Products"])
 app.include_router(order.router, prefix="/orders", tags=["Orders"])
