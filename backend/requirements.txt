@@ -1,3 +1,4 @@
+aiofiles==24.1.0
 aiosmtplib==2.0.2
 alembic==1.14.1
 aniso8601==10.0.1

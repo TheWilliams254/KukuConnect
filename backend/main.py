@@ -3,9 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db import engine, Base, AsyncSessionLocal
-from app.api import auth, order, product
+from app.api import auth, order, product,media
 from app.seed import seed_data_async
-from app.models import User, Product, Order
+from app.models import User, Product, Order, Media
 
 #Lifespan event@asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,3 +43,4 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(auth.router)
 app.include_router(product.router, tags=["Products"])
 app.include_router(order.router, prefix="/orders", tags=["Orders"])
+app.include_router(media.router, prefix="/media", tags=["Media"])

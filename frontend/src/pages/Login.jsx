@@ -12,32 +12,33 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        }),
-      });
+  e.preventDefault();
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        username: formData.username,
+        password: formData.password,
+      }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("role", data.role);
+    if (res.ok) {
+      // Store token + role
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.role);
 
-        navigate(data.role === "admin" ? "/admin" : "/dashboard");
-      } else {
-        alert(data.detail || "Login failed");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
+      // Redirect user based on role
+      navigate(data.role === "admin" ? "/admin" : "/dashboard");
+    } else {
+      alert(data.detail || "Login failed");
     }
-  };
-
+  } catch (err) {
+    console.error("Login error:", err);
+  }
+};
   return (
     <div className="auth-container">
       <h2>Login</h2>
